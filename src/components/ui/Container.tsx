@@ -12,10 +12,13 @@ const Container: React.FC<ContainerProps> = ({
   as: Component = 'div'
 }) => {
   return (
-    <Component className={`container mx-auto px-4 sm:px-6 lg:px-8 ${className}`}>
+    <Component
+      className={`w-full max-w-screen-xl px-4 sm:px-6 lg:px-8 mx-auto ${className}`}
+    >
       {children}
     </Component>
   );
 };
+
 
 export default Container;

@@ -1,20 +1,28 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import HomePage from './pages/HomePage';
-import AddVehiclePage from './pages/AddVehiclePage'; // 👈 new page
-import './index.css'; // global styles
+import AddVehiclePage from './pages/AddVehiclePage';
+import AdminDashboard from './components/admin/AdminDashboard';
+import './index.css';
+import AdminVehicleList from './components/admin/AdminVehicleList';
 
-function App() {
+const AppContent = () => {
+  const location = useLocation();
+
+  // ✅ Hide layout for these routes
+  const hideLayoutRoutes = ['/add-vehicle', '/admin/vehicles'];
+  const hideLayout = hideLayoutRoutes.includes(location.pathname);
+
   // Smooth scrolling for anchor links
   useEffect(() => {
     const handleAnchorClick = (e: Event) => {
-      e.preventDefault();
       const anchor = e.currentTarget as HTMLAnchorElement;
       const target = document.querySelector(anchor.getAttribute('href') || '');
       if (target) {
+        e.preventDefault();
         target.scrollIntoView({ behavior: 'smooth' });
       }
     };
@@ -28,19 +36,28 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <div className="flex flex-col min-h-screen">
-        <Header />
-        <main className="flex-grow">
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/add-vehicle" element={<AddVehiclePage />} />
-          </Routes>
-        </main>
-        <Footer />
-      </div>
+    <div className="flex flex-col min-h-screen">
+      {!hideLayout && <Header />}
+      <main className="flex-grow">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/add-vehicle" element={<AddVehiclePage />} />
+          <Route path="/admin/vehicles" element={<AdminDashboard />} />
+          <Route path="/admin/vehicles" element={<AdminVehicleList />} />
+
+        </Routes>
+      </main>
+      {!hideLayout && <Footer />}
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    <BrowserRouter basename="/preowned-car-app"> {/* Change to "" if not hosting in subfolder */}
+      <AppContent />
     </BrowserRouter>
   );
-}
+};
 
 export default App;

@@ -12,14 +12,24 @@
     "deploy": "vite build && gh-pages -d dist"
   },
   "dependencies": {
+    "axios": "^1.9.0",
+    "cors": "^2.8.5",
+    "emailjs-com": "^3.2.0",
+    "express": "^5.1.0",
+    "firebase": "^11.8.1",
+    "firebase-admin": "^13.4.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-dropzone": "^14.3.8",
     "react-hook-form": "^7.51.0",
+    "react-responsive-carousel": "^3.2.23",
     "react-router-dom": "^7.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
+    "@types/express": "^5.0.2",
+    "@types/multer": "^1.4.12",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
     "@types/react-router-dom": "^5.3.3",

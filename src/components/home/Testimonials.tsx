@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Star } from 'lucide-react';
-import { testimonials } from '../../data/testimonials';
 import Container from '../ui/Container';
 
+interface Review {
+  author_name: string;
+  text: string;
+  rating: number;
+  profile_photo_url?: string;
+}
+
 const Testimonials: React.FC = () => {
+  const [reviews, setReviews] = useState<Review[]>([]);
+useEffect(() => {
+  fetch('http://localhost:5000/api/google-reviews')
+    .then(res => res.json())
+    .then(data => {
+      console.log("✅ Reviews from backend:", data); // 👈 Add this
+      setReviews(data);
+    });
+}, []);
+
+
   return (
     <section className="py-16 bg-gray-100">
       <Container>
@@ -13,31 +30,33 @@ const Testimonials: React.FC = () => {
             Don't just take our word for it. Hear from our satisfied customers about their experience with The Car King on Queen.
           </p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {testimonials.map((testimonial) => (
-            <div 
-              key={testimonial.id} 
+          {reviews.map((review, index) => (
+            <div
+              key={index}
               className="bg-white rounded-lg p-6 shadow-md hover:shadow-lg transition-shadow"
             >
               <div className="flex mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className={`w-5 h-5 ${i < testimonial.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'}`} 
+                  <Star
+                    key={i}
+                    className={`w-5 h-5 ${
+                      i < review.rating ? 'text-yellow-500 fill-yellow-500' : 'text-gray-300'
+                    }`}
                   />
                 ))}
               </div>
-              <p className="text-gray-700 mb-6 italic">"{testimonial.content}"</p>
+              <p className="text-gray-700 mb-6 italic">"{review.text}"</p>
               <div className="flex items-center">
-                <img 
-                  src={testimonial.avatar} 
-                  alt={testimonial.name} 
+                <img
+                  src={review.profile_photo_url || '/default-avatar.png'}
+                  alt={review.author_name}
                   className="w-12 h-12 rounded-full mr-4 object-cover"
                 />
                 <div>
-                  <h4 className="font-semibold text-gray-900">{testimonial.name}</h4>
-                  <p className="text-gray-600 text-sm">{testimonial.role}</p>
+                  <h4 className="font-semibold text-gray-900">{review.author_name}</h4>
+                  <p className="text-gray-600 text-sm">Verified Google Review</p>
                 </div>
               </div>
             </div>

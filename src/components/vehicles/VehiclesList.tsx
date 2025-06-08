@@ -1,85 +1,159 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, ChevronDown, X } from 'lucide-react';
-import { vehicles, getFilterOptions } from '../../data/vehicles';
+import {  getFilterOptions } from '../../data/vehicles';
 import { Vehicle, VehicleFilters } from '../../types';
 import Container from '../ui/Container';
 import VehicleCard from './VehicleCard';
 import Button from '../ui/Button';
+import { db } from '../../firebase'; // Adjust path based on your setup
+import { collection, getDocs } from 'firebase/firestore';
+import VehicleDetailsModal from '../vehicles/VehicleDetailsModal';
+
 
 const VehiclesList: React.FC = () => {
-  const filterOptions = getFilterOptions();
-  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>(vehicles);
+
+
+
+const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
+  const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+
+
   const [searchTerm, setSearchTerm] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   
-  const [filters, setFilters] = useState<VehicleFilters>({
-    make: [],
-    bodyType: [],
-    priceRange: filterOptions.priceRange,
-    yearRange: filterOptions.yearRange,
-    condition: [],
-    transmission: [],
-    fuelType: []
-  });
-  
-  // Apply filters when they change
-  useEffect(() => {
-    let results = vehicles;
-    
-    // Apply search term
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      results = results.filter(
-        vehicle => 
-          vehicle.make.toLowerCase().includes(term) || 
-          vehicle.model.toLowerCase().includes(term) ||
-          `${vehicle.year}`.includes(term) ||
-          vehicle.bodyType.toLowerCase().includes(term)
-      );
+ const [filters, setFilters] = useState<VehicleFilters>({
+  make: [],
+  bodyType: [],
+  transmission: [],
+  fuelType: [],
+  priceRange: [0, 100000], // ← temporary default
+  yearRange: [1990, new Date().getFullYear()],
+});
+
+  // Utility to extract unique values from vehicle list
+const uniqueValues = (list: Vehicle[], key: keyof Vehicle): string[] =>
+  Array.from(new Set(list.map(v => v[key]).filter(Boolean))) as string[];
+
+// Utility to calculate min and max of a number array
+const getMinMax = (arr: number[]): [number, number] => {
+  const nums = arr.filter(v => !isNaN(v)).sort((a, b) => a - b);
+  return nums.length ? [nums[0], nums[nums.length - 1]] : [0, 100000];
+};
+
+// ✅ Dynamic filter options based on all loaded vehicles
+const filterOptions = {
+  makes: uniqueValues(allVehicles, "make"),
+  bodyTypes: uniqueValues(allVehicles, "bodyType"),
+  transmissions: uniqueValues(allVehicles, "transmission"),
+  fuelTypes: uniqueValues(allVehicles, "fuelType"),
+  priceRange: getMinMax(allVehicles.map(v => Number(v.price))),
+  yearRange: getMinMax(allVehicles.map(v => Number(v.year))),
+};
+
+
+
+useEffect(() => {
+  const fetchVehicles = async () => {
+    try {
+      const snapshot = await getDocs(collection(db, 'vehicles'));
+      const data = snapshot.docs.map(doc => {
+        const raw = doc.data();
+        return {
+          id: doc.id,
+          ...raw,
+          images: raw.images || (raw.imageUrl ? [raw.imageUrl] : []), 
+          price: Number(raw.price),
+          year: Number(raw.year),
+        };
+      }) as Vehicle[];
+
+      setAllVehicles(data);
+      setFilteredVehicles(data);
+    } catch (err) {
+      console.error("❌ Error loading vehicles:", err);
     }
-    
-    // Apply make filter
-    if (filters.make.length > 0) {
-      results = results.filter(vehicle => filters.make.includes(vehicle.make));
-    }
-    
-    // Apply body type filter
-    if (filters.bodyType.length > 0) {
-      results = results.filter(vehicle => filters.bodyType.includes(vehicle.bodyType));
-    }
-    
-    // Apply condition filter
-    if (filters.condition.length > 0) {
-      results = results.filter(vehicle => filters.condition.includes(vehicle.condition));
-    }
-    
-    // Apply transmission filter
-    if (filters.transmission.length > 0) {
-      results = results.filter(vehicle => filters.transmission.includes(vehicle.transmission));
-    }
-    
-    // Apply fuel type filter
-    if (filters.fuelType.length > 0) {
-      results = results.filter(vehicle => filters.fuelType.includes(vehicle.fuelType));
-    }
-    
-    // Apply price range filter
-    results = results.filter(
-      vehicle => 
-        vehicle.price >= filters.priceRange[0] && 
-        vehicle.price <= filters.priceRange[1]
+  };
+
+  fetchVehicles();
+}, []);
+
+
+useEffect(() => {
+  if (allVehicles.length === 0) return;
+
+  let results = [...allVehicles];
+
+  console.log("🐞 All Vehicles Before Filtering:", allVehicles);
+  console.log("🧪 Filters:", filters);
+
+  // 🔍 Search filter
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    results = results.filter(vehicle =>
+      (vehicle.make?.toLowerCase() || '').includes(term) ||
+      (vehicle.model?.toLowerCase() || '').includes(term) ||
+      `${vehicle.year}`.includes(term) ||
+      (vehicle.bodyType?.toLowerCase() || '').includes(term)
     );
-    
-    // Apply year range filter
-    results = results.filter(
-      vehicle => 
-        vehicle.year >= filters.yearRange[0] && 
-        vehicle.year <= filters.yearRange[1]
+  }
+
+  // ✅ Checkbox filters (only if selected)
+ if (filters.make.length > 0) {
+  results = results.filter(vehicle =>
+    filters.make.includes((vehicle.make || '').toLowerCase())
+  );
+}
+
+
+  if (filters.bodyType.length > 0) {
+    results = results.filter(vehicle =>
+      filters.bodyType.includes(vehicle.bodyType?.toLowerCase()?.trim())
     );
-    
-    setFilteredVehicles(results);
-  }, [searchTerm, filters]);
-  
+  }
+
+  if (filters.transmission.length > 0) {
+    results = results.filter(vehicle =>
+      filters.transmission.includes(vehicle.transmission?.toLowerCase()?.trim())
+    );
+  }
+
+  if (filters.fuelType.length > 0) {
+    results = results.filter(vehicle =>
+      filters.fuelType.includes(vehicle.fuelType?.toLowerCase()?.trim())
+    );
+  }
+
+  // 💰 Only filter by price range if user changed it
+  if (
+    filters.priceRange[0] !== 0 || filters.priceRange[1] !== Infinity
+  ) {
+    results = results.filter(vehicle =>
+      typeof vehicle.price === 'number' &&
+      vehicle.price >= filters.priceRange[0] &&
+      vehicle.price <= filters.priceRange[1]
+    );
+  }
+
+  // 📆 Year range filter
+  if (
+    filters.yearRange[0] !== 0 || filters.yearRange[1] !== Infinity
+  ) {
+    results = results.filter(vehicle =>
+      typeof vehicle.year === 'number' &&
+      vehicle.year >= filters.yearRange[0] &&
+      vehicle.year <= filters.yearRange[1]
+    );
+  }
+
+  console.log("✅ Final filtered results:", results.length);
+  setFilteredVehicles(results);
+}, [allVehicles, searchTerm, filters]);
+
+
+
+// ✅ added allVehicles to dependencies
+
   const toggleFilter = () => {
     setIsFilterOpen(!isFilterOpen);
   };
@@ -108,24 +182,22 @@ const VehiclesList: React.FC = () => {
       }
     });
   };
-  
-  const resetFilters = () => {
-    setFilters({
-      make: [],
-      bodyType: [],
-      priceRange: filterOptions.priceRange,
-      yearRange: filterOptions.yearRange,
-      condition: [],
-      transmission: [],
-      fuelType: []
-    });
-    setSearchTerm('');
-  };
+ const resetFilters = () => {
+  setFilters({
+    make: [],
+    bodyType: [],
+    transmission: [],
+    fuelType: [],
+    priceRange: [0, Infinity],
+    yearRange: [0, Infinity],
+  });
+  setSearchTerm('');
+};
+
   
   const activeFiltersCount = (
     filters.make.length +
     filters.bodyType.length +
-    filters.condition.length +
     filters.transmission.length +
     filters.fuelType.length +
     (filters.priceRange[0] !== filterOptions.priceRange[0] || 
@@ -133,7 +205,17 @@ const VehiclesList: React.FC = () => {
     (filters.yearRange[0] !== filterOptions.yearRange[0] || 
      filters.yearRange[1] !== filterOptions.yearRange[1] ? 1 : 0)
   );
-  
+  console.log("✅ Rendering VehiclesList with", filteredVehicles.length, "vehicles");
+
+
+  if (!allVehicles || allVehicles.length === 0) {
+  return (
+    <section className="py-20 text-center">
+      <h2 className="text-xl font-semibold text-gray-700">Loading vehicles...</h2>
+    </section>
+  );
+}
+
   return (
     <section className="py-16 bg-gray-50" id="vehicles">
       <Container>
@@ -146,8 +228,8 @@ const VehiclesList: React.FC = () => {
           </div>
           <div className="hidden md:block">
             <p className="text-gray-600">
-              Showing <span className="font-semibold">{filteredVehicles.length}</span> of <span className="font-semibold">{vehicles.length}</span> vehicles
-            </p>
+  Showing <span className="font-semibold">{filteredVehicles.length}</span> of <span className="font-semibold">{allVehicles.length}</span> vehicles
+</p>
           </div>
         </div>
         
@@ -205,7 +287,7 @@ const VehiclesList: React.FC = () => {
                         <input
                           type="checkbox"
                           checked={filters.make.includes(make)}
-                          onChange={() => handleCheckboxChange('make', make)}
+onChange={() => handleCheckboxChange('make', make.toLowerCase())}
                           className="rounded text-red-600 focus:ring-red-500 mr-2"
                         />
                         <span className="text-gray-700">{make}</span>
@@ -231,24 +313,63 @@ const VehiclesList: React.FC = () => {
                     ))}
                   </div>
                 </div>
-                
-                {/* Condition Filter */}
-                <div className="mb-6">
-                  <h4 className="font-medium text-gray-900 mb-2">Condition</h4>
-                  <div className="space-y-2">
-                    {['new', 'used'].map(condition => (
-                      <label key={condition} className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={filters.condition.includes(condition as 'new' | 'used')}
-                          onChange={() => handleCheckboxChange('condition', condition)}
-                          className="rounded text-red-600 focus:ring-red-500 mr-2"
-                        />
-                        <span className="text-gray-700 capitalize">{condition}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
+                {/* Price Range Filter */}
+<div className="mb-6">
+  <h4 className="font-medium text-gray-900 mb-2">Price Range</h4>
+  <div className="flex gap-2 items-center">
+    <input
+      type="number"
+      value={filters.priceRange[0]}
+      min={filterOptions.priceRange[0]}
+      max={filterOptions.priceRange[1]}
+      onChange={e =>
+        setFilters(prev => ({ ...prev, priceRange: [Number(e.target.value), prev.priceRange[1]] }))
+      }
+      className="w-20 border rounded px-2 py-1"
+    />
+    <span>to</span>
+    <input
+      type="number"
+      value={filters.priceRange[1]}
+      min={filterOptions.priceRange[0]}
+      max={filterOptions.priceRange[1]}
+      onChange={e =>
+        setFilters(prev => ({ ...prev, priceRange: [prev.priceRange[0], Number(e.target.value)] }))
+      }
+      className="w-20 border rounded px-2 py-1"
+    />
+  </div>
+</div>
+
+{/* Year Range Filter */}
+<div className="mb-6">
+  <h4 className="font-medium text-gray-900 mb-2">Year Range</h4>
+  <div className="flex gap-2 items-center">
+    <input
+      type="number"
+      value={filters.yearRange[0]}
+      min={filterOptions.yearRange[0]}
+      max={filterOptions.yearRange[1]}
+      onChange={e =>
+        setFilters(prev => ({ ...prev, yearRange: [Number(e.target.value), prev.yearRange[1]] }))
+      }
+      className="w-20 border rounded px-2 py-1"
+    />
+    <span>to</span>
+    <input
+      type="number"
+      value={filters.yearRange[1]}
+      min={filterOptions.yearRange[0]}
+      max={filterOptions.yearRange[1]}
+      onChange={e =>
+        setFilters(prev => ({ ...prev, yearRange: [prev.yearRange[0], Number(e.target.value)] }))
+      }
+      className="w-20 border rounded px-2 py-1"
+    />
+  </div>
+</div>
+
+               
                 
                 {/* Transmission Filter */}
                 <div className="mb-6">
@@ -293,8 +414,9 @@ const VehiclesList: React.FC = () => {
           <div className="lg:w-3/4">
             <div className="mb-4 block md:hidden">
               <p className="text-gray-600">
-                Showing <span className="font-semibold">{filteredVehicles.length}</span> of <span className="font-semibold">{vehicles.length}</span> vehicles
-              </p>
+  Showing <span className="font-semibold">{filteredVehicles.length}</span> of <span className="font-semibold">{allVehicles.length}</span> vehicles
+</p>
+
             </div>
             
             {filteredVehicles.length === 0 ? (
@@ -310,8 +432,31 @@ const VehiclesList: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredVehicles.map(vehicle => (
-                  <VehicleCard key={vehicle.id} vehicle={vehicle} />
-                ))}
+  <div
+    key={vehicle.id}
+    className="p-4 border rounded cursor-pointer"
+    onClick={() => setSelectedVehicle(vehicle)} // 👈 open modal
+  >
+    <img
+      src={vehicle?.images?.[0] || vehicle?.imageUrl || "https://placehold.co/400x300?text=No+Image"}
+      alt={`${vehicle?.year ?? ''} ${vehicle?.make ?? ''} ${vehicle?.model ?? ''}`}
+      className="w-full h-48 object-cover mb-4 rounded"
+    />
+    <p><strong>Make:</strong> {vehicle.make}</p>
+    <p><strong>Model:</strong> {vehicle.model}</p>
+    <p><strong>Year:</strong> {vehicle.year}</p>
+    <p><strong>Price:</strong> {vehicle.price}</p>
+    <p><strong>Fuel:</strong> {vehicle.fuelType}</p>
+  </div>
+))}
+
+{selectedVehicle && (
+  <VehicleDetailsModal
+    vehicle={selectedVehicle}
+    onClose={() => setSelectedVehicle(null)}
+  />
+)}
+
               </div>
             )}
             
@@ -327,6 +472,9 @@ const VehiclesList: React.FC = () => {
       </Container>
     </section>
   );
+
 };
 
 export default VehiclesList;
+
+

@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cars",
+  "info": {
+    "singularName": "car",
+    "pluralName": "cars",
+    "displayName": "Car"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "make": {
+      "type": "string"
+    },
+    "model": {
+      "type": "string"
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "fuelType": {
+      "type": "enumeration",
+      "enum": [
+        "Gas",
+        "Electric",
+        "Hybrid"
+      ]
+    },
+    "Enumeration": {
+      "type": "enumeration",
+      "enum": [
+        "Manual",
+        "Automatic"
+      ]
+    },
+    "mileage": {
+      "type": "integer"
+    },
+    "Description": {
+      "type": "blocks"
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "sold": {
+      "type": "boolean"
+    }
+  }
+}

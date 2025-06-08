@@ -1,16 +1,42 @@
-import React, { createContext, useContext } from "react";
+// src/context/AuthContext.tsx
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 type AuthContextType = {
   isAdmin: boolean;
+  login: (username: string, password: string) => boolean;
+  logout: () => void;
 };
 
-const AuthContext = createContext<AuthContextType>({ isAdmin: false });
+const AuthContext = createContext<AuthContextType>({
+  isAdmin: false,
+  login: () => false,
+  logout: () => {},
+});
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const role = localStorage.getItem("role"); // You can replace this with real auth
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+    setIsAdmin(role === "admin");
+  }, []);
+
+  const login = (username: string, password: string) => {
+    if (username === "admin" && password === "admin123") {
+      localStorage.setItem("role", "admin");
+      setIsAdmin(true);
+      return true;
+    }
+    return false;
+  };
+
+  const logout = () => {
+    localStorage.removeItem("role");
+    setIsAdmin(false);
+  };
 
   return (
-    <AuthContext.Provider value={{ isAdmin: role === "admin" }}>
+    <AuthContext.Provider value={{ isAdmin, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

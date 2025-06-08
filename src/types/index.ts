@@ -1,4 +1,5 @@
 export interface Vehicle {
+  imageUrl: string;
   id: string;
   make: string;
   model: string;
@@ -9,7 +10,7 @@ export interface Vehicle {
   transmission: string;
   engineSize: string;
   color: string;
-  images: string[];
+images: string[];
   features: string[];
   description: string;
   condition: 'new' | 'used';
@@ -31,7 +32,6 @@ export type VehicleFilters = {
   bodyType: string[];
   priceRange: [number, number];
   yearRange: [number, number];
-  condition: ('new' | 'used' | '')[];
   transmission: string[];
   fuelType: string[];
 };

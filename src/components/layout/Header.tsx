@@ -3,6 +3,8 @@ import { Menu, X, Phone, ChevronDown, Car } from 'lucide-react';
 import { Link } from 'react-router-dom'; // ✅ Add this line
 import Container from '../ui/Container';
 import Button from '../ui/Button';
+import { useNavigate } from 'react-router-dom';
+
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,6 +19,7 @@ const Header: React.FC = () => {
   }, []);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+const navigate = useNavigate();
 
   const navLinks = [
     { title: 'Home', path: '#' },
@@ -64,13 +67,24 @@ const Header: React.FC = () => {
 
           {/* Right Side */}
           <div className="hidden md:flex items-center space-x-4">
-            <div className="flex items-center">
-              <Phone className={`w-5 h-5 ${isScrolled ? 'text-red-600' : 'text-white'}`} />
-              <span className={`ml-2 font-medium ${isScrolled ? 'text-gray-800' : 'text-white'}`}>
-                (555) 123-4567
-              </span>
-            </div>
-            <Button size="sm">Schedule Test Drive</Button>
+           <div className="flex items-center whitespace-nowrap">
+  <Phone className={`w-5 h-5 ${isScrolled ? 'text-red-600' : 'text-white'}`} />
+  <span className={`ml-2 font-medium ${isScrolled ? 'text-gray-800' : 'text-white'}`}>
+    (555) 123-4567
+  </span>
+</div>
+
+<Button
+  size="sm"
+  onClick={() => {
+    sessionStorage.setItem('preselectSubject', 'test-drive'); // Set subject
+    document.getElementById('contact-form')?.scrollIntoView({ behavior: 'smooth' }); // Scroll to form
+  }}
+>
+  Schedule Test Drive
+</Button>
+
+
           </div>
 
           {/* Mobile Menu Button */}

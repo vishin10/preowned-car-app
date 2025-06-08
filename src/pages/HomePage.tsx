@@ -6,7 +6,6 @@ import Testimonials from '../components/home/Testimonials';
 import AboutUs from '../components/home/AboutUs';
 import ContactSection from '../components/home/ContactSection';
 import VehiclesList from '../components/vehicles/VehiclesList';
-import AddCarForm from '../components/admin/AddCarForm';
 
 const HomePage: React.FC = () => {
   return (
@@ -19,7 +18,6 @@ const HomePage: React.FC = () => {
       <Testimonials />
       <ContactSection />
       <div className="py-16 bg-gray-50">
-        <AddCarForm />
       </div>
     </>
   );

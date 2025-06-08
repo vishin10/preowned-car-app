@@ -1,13 +1,28 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
-import { vehicles } from '../../data/vehicles';
+
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { db } from '../../firebase';
+import { useEffect, useState } from 'react';
+
 import Container from '../ui/Container';
 import Button from '../ui/Button';
 import VehicleCard from '../vehicles/VehicleCard';
 
 const FeaturedVehicles: React.FC = () => {
   // Get a subset of vehicles to feature
-  const featuredVehicles = vehicles.slice(0, 3);
+const [featuredVehicles, setFeaturedVehicles] = useState<any[]>([]);
+
+useEffect(() => {
+  const fetchVehicles = async () => {
+    const q = query(collection(db, 'vehicles'), orderBy('year', 'desc'), limit(3));
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    setFeaturedVehicles(data);
+  };
+
+  fetchVehicles();
+}, []);
   
   return (
     <section className="py-16 bg-gray-50" id="featured">
