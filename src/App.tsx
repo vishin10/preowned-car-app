@@ -54,7 +54,7 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <BrowserRouter basename="/preowned-car-app"> {/* Change to "" if not hosting in subfolder */}
+    <BrowserRouter> 
       <AppContent />
     </BrowserRouter>
   );

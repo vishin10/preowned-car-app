@@ -69,10 +69,11 @@ const AddCarForm: React.FC = () => {
     formData.append("image", file);
 
     try {
-      const res = await fetch("http://localhost:4000/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+     const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/upload`, {
+  method: "POST",
+  body: formData,
+});
+
 
       if (!res.ok) {
         const errText = await res.text();
@@ -124,35 +125,36 @@ const vehicleData = {
   images: uploadedUrls, // ✅ store all uploaded image URLs
 };
 
-  try {
-    if (isEditMode && editData?.id) {
-      // UPDATE logic
-      const res = await fetch(`http://localhost:4000/api/admin/update-vehicle/${editData.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(vehicleData),
-      });
+ try {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
-      if (!res.ok) throw new Error("Update failed");
+  if (isEditMode && editData?.id) {
+    // UPDATE logic
+    const res = await fetch(`${baseUrl}/api/admin/update-vehicle/${editData.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(vehicleData),
+    });
 
-      alert("✅ Vehicle updated successfully!");
-    } else {
-      // ADD logic
-      const res = await fetch("http://localhost:4000/api/admin/add-vehicle", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(vehicleData),
-      });
+    if (!res.ok) throw new Error("Update failed");
 
-      if (!res.ok) throw new Error("Add failed");
+    alert("✅ Vehicle updated successfully!");
+  } else {
+    // ADD logic
+    const res = await fetch(`${baseUrl}/api/admin/add-vehicle`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(vehicleData),
+    });
 
-      alert("✅ Vehicle added successfully!");
-    }
-  } catch (err) {
-    console.error("❌ Error saving vehicle:", err);
-    alert("❌ Failed to save vehicle");
+    if (!res.ok) throw new Error("Add failed");
+
+    alert("✅ Vehicle added successfully!");
   }
-
+} catch (err) {
+  console.error("❌ Error saving vehicle:", err);
+  alert("❌ Failed to save vehicle");
+}
 
 };
 

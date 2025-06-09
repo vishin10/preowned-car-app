@@ -16,7 +16,9 @@ const VehicleListWithDelete: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const fetchVehicles = async () => {
-    const res = await fetch('http://localhost:4000/api/admin/vehicles');
+const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+const res = await fetch(`${baseUrl}/api/admin/vehicles`);
     const data = await res.json();
     setVehicles(data);
     setFilteredVehicles(data.slice(0, 6)); // show first 6 initially
@@ -26,9 +28,12 @@ const VehicleListWithDelete: React.FC = () => {
     if (!window.confirm("Are you sure you want to delete this vehicle?")) return;
 
     try {
-      await fetch(`http://localhost:4000/api/admin/vehicles/${id}`, {
-        method: 'DELETE',
-      });
+     const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+await fetch(`${baseUrl}/api/admin/vehicles/${id}`, {
+  method: 'DELETE',
+});
+
       alert('Vehicle deleted successfully.');
       fetchVehicles(); // refresh list
     } catch (err) {

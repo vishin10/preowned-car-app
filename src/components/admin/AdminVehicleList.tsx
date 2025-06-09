@@ -40,9 +40,12 @@ const AdminVehicleList: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this vehicle?')) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/admin/delete-vehicle/${id}`, {
-        method: 'DELETE',
-      });
+      const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+const res = await fetch(`${baseUrl}/api/admin/delete-vehicle/${id}`, {
+  method: 'DELETE',
+});
+
       if (res.ok) {
         alert('Vehicle deleted ✅');
         fetchVehicles();
@@ -57,9 +60,12 @@ const AdminVehicleList: React.FC = () => {
 
   const handleMarkSold = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:4000/api/admin/mark-sold/${id}`, {
-        method: 'PATCH',
-      });
+     const baseUrl = import.meta.env.VITE_API_BASE_URL;
+
+const res = await fetch(`${baseUrl}/api/admin/mark-sold/${id}`, {
+  method: 'PATCH',
+});
+
       if (res.ok) {
         alert('Vehicle marked as sold ✅');
         fetchVehicles();
