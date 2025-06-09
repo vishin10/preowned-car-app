@@ -73,7 +73,7 @@ app.get('/api/google-reviews', async (_req, res) => {
       params: {
         place_id: 'ChIJacPtUmWJyIkRDCwymLIfASY',
         fields: 'name,rating,reviews',
-        key: 'YOUR_API_KEY', // 🔐 Replace this in .env for security
+key: process.env.GOOGLE_PLACES_API_KEY,
       },
     });
 
