@@ -89,74 +89,76 @@ const AddCarForm: React.FC = () => {
   };
 
 const onSubmit = async (data: AddCarFormData) => {
- const files = Array.from(data.images); // FileList -> array
-const uploadedUrls: string[] = [];
-
-if (files.length === 0) {
-  alert("Please select at least one image");
-  return;
-}
-
-// ✅ Upload all selected files
-for (const file of files) {
-  const uploadedUrl = await handleImageUpload(file);
-  if (!uploadedUrl) {
-    alert("Image upload failed");
-    return;
-  }
-  uploadedUrls.push(uploadedUrl);
-}
-
-const vehicleData = {
-  make: data.make,
-  model: data.model,
-  year: Number(data.year),
-  price: Number(data.price),
-  mileage: Number(data.mileage),
-  fuelType: data.fuelType,
-  transmission: data.transmission,
-  engineSize: data.engineSize,
-  color: data.color,
-  features: data.features.split(",").map((f) => f.trim()),
-  description: data.description,
-  bodyType: data.bodyType,
-  condition: "used",
-  sold: false,
-  images: uploadedUrls, // ✅ store all uploaded image URLs
-};
-
- try {
   const baseUrl = import.meta.env.VITE_API_BASE_URL;
+  const uploadedUrls: string[] = [];
 
-  if (isEditMode && editData?.id) {
-    // UPDATE logic
-    const res = await fetch(`${baseUrl}/api/admin/update-vehicle/${editData.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(vehicleData),
-    });
+  try {
+    // 1. Upload new images if selected
+    if (data.images && data.images.length > 0) {
+      const files = Array.from(data.images);
+      for (const file of files) {
+        const url = await handleImageUpload(file);
+        if (!url) throw new Error("Image upload failed");
+        uploadedUrls.push(url);
+      }
+    }
 
-    if (!res.ok) throw new Error("Update failed");
+    // 2. Determine which images to save
+    const finalImages = uploadedUrls.length > 0
+      ? uploadedUrls
+      : isEditMode && previewImages.length > 0
+      ? previewImages
+      : [];
 
-    alert("✅ Vehicle updated successfully!");
-  } else {
-    // ADD logic
-    const res = await fetch(`${baseUrl}/api/admin/add-vehicle`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(vehicleData),
-    });
+    if (finalImages.length === 0) {
+      alert("Please select at least one image");
+      return;
+    }
 
-    if (!res.ok) throw new Error("Add failed");
+    // 3. Build vehicle data
+    const vehicleData = {
+      make: data.make,
+      model: data.model,
+      year: Number(data.year),
+      price: Number(data.price),
+      mileage: Number(data.mileage),
+      fuelType: data.fuelType,
+      transmission: data.transmission,
+      engineSize: data.engineSize,
+      color: data.color,
+      features: data.features.split(",").map(f => f.trim()),
+      description: data.description,
+      bodyType: data.bodyType,
+      condition: "used",
+      sold: false,
+      images: finalImages,
+    };
 
-    alert("✅ Vehicle added successfully!");
+    // 4. Call appropriate API
+    let res;
+    if (isEditMode && editData?.id) {
+      res = await fetch(`${baseUrl}/api/admin/update-vehicle/${editData.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(vehicleData),
+      });
+    } else {
+      res = await fetch(`${baseUrl}/api/admin/add-vehicle`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(vehicleData),
+      });
+    }
+
+    if (!res.ok) throw new Error("API failed");
+
+    alert(`✅ Vehicle ${isEditMode ? "updated" : "added"} successfully!`);
+  } catch (err) {
+    console.error("❌ Vehicle save failed:", err);
+    alert("❌ Failed to save vehicle");
   }
-} catch (err) {
-  console.error("❌ Error saving vehicle:", err);
-  alert("❌ Failed to save vehicle");
-}
-
 };
+
 
   const onDrop = (acceptedFiles: File[]) => {
     const urls = acceptedFiles.map(file => URL.createObjectURL(file));
