@@ -123,6 +123,11 @@ app.patch('/api/admin/update-vehicle/:id', async (req: Request, res: Response) =
     }
 
     // Optional: Validate or clean fields if needed here
+
+    if (!id || !data) {
+      return res.status(400).json({ error: 'Invalid request' });
+    }
+
     await db.collection('vehicles').doc(id).update(data);
     res.status(200).json({ message: 'Vehicle updated successfully' });
   } catch (err) {
