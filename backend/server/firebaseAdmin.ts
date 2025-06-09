@@ -15,7 +15,7 @@ const serviceAccount = JSON.parse(
 
 const app = initializeApp({
   credential: cert(serviceAccount),
-  storageBucket: 'cardealer-york.firebasestorage.app',
+  storageBucket: 'cardealer-york.appspot.com', // ✅ corrected here
 });
 
 export const db = getFirestore(app);
