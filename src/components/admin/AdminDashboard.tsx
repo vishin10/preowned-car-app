@@ -20,6 +20,7 @@ type Vehicle = {
 export default function AdminVehiclesPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const navigate = useNavigate();
+  const baseUrl = import.meta.env.VITE_API_BASE_URL;
 
   const fetchVehicles = async () => {
     const snapshot = await getDocs(collection(db, "vehicles"));
@@ -30,7 +31,7 @@ export default function AdminVehiclesPage() {
         ...raw,
         year: Number(raw.year),
         price: Number(raw.price),
-        images: raw.images || [],
+    images: Array.isArray(raw.images) ? raw.images : [], // ✅ FIX
       };
     }) as Vehicle[];
     setVehicles(data);
@@ -43,7 +44,7 @@ export default function AdminVehiclesPage() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this vehicle?")) return;
     try {
-      const res = await fetch(`http://localhost:4000/api/admin/delete-vehicle/${id}`, {
+      const res = await fetch(`${baseUrl}/api/admin/delete-vehicle/${id}`, {
         method: "DELETE",
       });
       if (res.ok) {
@@ -60,7 +61,7 @@ export default function AdminVehiclesPage() {
 
   const handleMarkSold = async (id: string) => {
     try {
-      const res = await fetch(`http://localhost:4000/api/admin/mark-sold/${id}`, {
+      const res = await fetch(`${baseUrl}/api/admin/mark-sold/${id}`, {
         method: "PATCH",
       });
       if (res.ok) {
