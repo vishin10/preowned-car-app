@@ -106,9 +106,10 @@ useEffect(() => {
 }
 
 
-  if (filters.bodyType.length > 0) {
+   if (filters.bodyType.length > 0) {
+    const selected = filters.bodyType.map(b => b.toLowerCase());
     results = results.filter(vehicle =>
-      filters.bodyType.includes(vehicle.bodyType?.toLowerCase()?.trim())
+      selected.includes(vehicle.bodyType?.toLowerCase())
     );
   }
 
@@ -118,9 +119,10 @@ useEffect(() => {
     );
   }
 
-  if (filters.fuelType.length > 0) {
+ if (filters.fuelType.length > 0) {
+    const selected = filters.fuelType.map(f => f.toLowerCase());
     results = results.filter(vehicle =>
-      filters.fuelType.includes(vehicle.fuelType?.toLowerCase()?.trim())
+      selected.includes(vehicle.fuelType?.toLowerCase())
     );
   }
 
@@ -368,9 +370,7 @@ onChange={() => handleCheckboxChange('make', make.toLowerCase())}
     />
   </div>
 </div>
-
-               
-                
+                            
                 {/* Transmission Filter */}
                 <div className="mb-6">
                   <h4 className="font-medium text-gray-900 mb-2">Transmission</h4>
