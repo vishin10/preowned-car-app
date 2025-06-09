@@ -15,7 +15,7 @@ const serviceAccount = JSON.parse(fs.readFileSync(secretPath, 'utf-8')) as Servi
 
 const app = initializeApp({
   credential: cert(serviceAccount),
-  storageBucket: 'cardealer-york.appspot.com', // ✅ double-check Firebase Storage bucket name
+storageBucket: "cardealer-york.firebasestorage.app",
 });
 
 export const db = getFirestore(app);
