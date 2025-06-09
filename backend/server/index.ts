@@ -109,57 +109,19 @@ app.patch('/api/admin/mark-sold/:id', async (req, res) => {
 app.patch('/api/admin/update-vehicle/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const data = req.body;
 
-    if (!id || !req.body) {
+    if (!id || !data) {
       return res.status(400).json({ error: 'Invalid request' });
     }
 
-    const {
-      make,
-      model,
-      year,
-      price,
-      mileage,
-      fuelType,
-      transmission,
-      engineSize,
-      color,
-      features = [], // ✅ default to empty array if undefined
-      description,
-      bodyType,
-      condition,
-      images,
-      sold,
-    } = req.body;
-
-    const updateData = {
-      make,
-      model,
-      year: Number(year),
-      price: Number(price),
-      mileage: Number(mileage),
-      fuelType,
-      transmission,
-      engineSize,
-      color,
-      features: typeof features === 'string'
-        ? features.split(',').map((f: string) => f.trim())
-        : features,
-      description,
-      bodyType,
-      condition: condition || 'used',
-      images,
-      sold: sold || false,
-    };
-
-    await db.collection('vehicles').doc(id).update(updateData);
+    await db.collection('vehicles').doc(id).update(data);
     res.status(200).json({ message: 'Vehicle updated successfully' });
   } catch (err) {
-    console.error('❌ Update Error:', err);
+    console.error("❌ Update Error:", err);
     res.status(500).json({ error: 'Failed to update vehicle' });
   }
 });
-
 
 app.listen(PORT, () => {
   console.log(`✅ Backend running on port ${PORT}`);
