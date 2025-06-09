@@ -72,18 +72,22 @@ app.get('/api/google-reviews', async (_req, res) => {
     const response = await axios.get('https://maps.googleapis.com/maps/api/place/details/json', {
       params: {
         place_id: 'ChIJacPtUmWJyIkRDCwymLIfASY',
-        fields: 'name,rating,reviews',
-key: process.env.GOOGLE_PLACES_API_KEY,
+        fields: 'name,rating,user_ratings_total,reviews',
+        key: process.env.GOOGLE_PLACES_API_KEY,
       },
     });
+
+    console.log('✅ Full API Response:', response.data); // <== Add this
 
     const reviews = response.data.result?.reviews || [];
     const fiveStar = reviews.filter((r: any) => r.rating === 5);
     res.json(fiveStar);
   } catch (error) {
+    console.error("❌ Failed to fetch reviews", error);
     res.status(500).json({ message: 'Failed to fetch reviews' });
   }
 });
+
 
 // ✅ Delete a vehicle
 app.delete('/api/admin/delete-vehicle/:id', async (req, res) => {
