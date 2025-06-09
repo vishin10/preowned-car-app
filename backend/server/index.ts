@@ -6,7 +6,9 @@ import uploadRoutes from './upload';
 import { db } from './firebaseAdmin';
 
 const app = express();
-const PORT = 4000;
+
+// ✅ Use Render's dynamic port or default to 4000 locally
+const PORT = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(express.json());
@@ -29,10 +31,9 @@ app.post('/api/admin/add-vehicle', async (req: Request, res: Response) => {
       description,
       bodyType,
       condition,
-      images, // ✅ Replace imageUrl with images
+      images,
     } = req.body;
 
-    // ✅ Validate images array
     if (!Array.isArray(images) || images.length === 0) {
       return res.status(400).json({ error: 'No images uploaded' });
     }
@@ -52,7 +53,7 @@ app.post('/api/admin/add-vehicle', async (req: Request, res: Response) => {
       bodyType,
       condition: condition || 'used',
       sold: false,
-      images, // ✅ Save all images here
+      images,
     };
 
     const result = await db.collection('vehicles').add(vehicleData);
@@ -82,7 +83,6 @@ app.get('/api/google-reviews', async (req, res) => {
   }
 });
 
-// DELETE a vehicle
 app.delete('/api/admin/delete-vehicle/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -93,7 +93,6 @@ app.delete('/api/admin/delete-vehicle/:id', async (req, res) => {
   }
 });
 
-// PATCH mark as sold
 app.patch('/api/admin/mark-sold/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -121,7 +120,6 @@ app.patch('/api/admin/update-vehicle/:id', async (req: Request, res: Response) =
   }
 });
 
-
 app.listen(PORT, () => {
-  console.log(`✅ Backend running at http://localhost:${PORT}`);
+  console.log(`✅ Backend running on port ${PORT}`);
 });
