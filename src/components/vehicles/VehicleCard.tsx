@@ -66,6 +66,12 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
               {vehicle.fuelType}
             </span>
           )}
+
+{vehicle.sold && (
+  <div className="text-red-600 font-bold mb-2">SOLD</div>
+)}
+
+
         </div>
 
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">

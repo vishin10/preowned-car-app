@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Star } from 'lucide-react';
 import Container from '../ui/Container';
 
@@ -9,17 +9,29 @@ interface Review {
   profile_photo_url?: string;
 }
 
-const Testimonials: React.FC = () => {
-  const [reviews, setReviews] = useState<Review[]>([]);
-useEffect(() => {
-  fetch('http://localhost:5000/api/google-reviews')
-    .then(res => res.json())
-    .then(data => {
-      console.log("✅ Reviews from backend:", data); // 👈 Add this
-      setReviews(data);
-    });
-}, []);
+const defaultReviews: Review[] = [
+  {
+    author_name: 'Lissa Nazario',
+    text: "This dealership was a great help when the car I wanted didn't work out, providing me with a spacious and affordable option for my kids, and I highly recommend it to anyone in search of a vehicle. Great customer service.",
+    rating: 5,
+    profile_photo_url: '/default-avatar.png',
+  },
+  {
+    author_name: 'Kim Mazza',
+    text: "My experience with Car King on Queen has been great!!! Andrew, Trev and Tio are amazing! The service I received was terrific! If I ever had a question Andrew was always there to help! I purchased a 2011 128i and I absolutely love it! I am so happy and I would recommend Car King on Queen to anyone! Thank you for the great service!!!! You are the best!!!",
+    rating: 5,
+    profile_photo_url: '/default-avatar.png',
+  },
+  {
+    author_name: 'Chris',
+    text: "Excellent communication. Everything was smooth and transparent. I highly recommend The Car King on Queen for your next vehicle.",
+    rating: 5,
+    profile_photo_url: '/default-avatar.png',
+  },
+];
 
+const Testimonials: React.FC = () => {
+  const reviews = defaultReviews;
 
   return (
     <section className="py-16 bg-gray-100">
@@ -31,7 +43,7 @@ useEffect(() => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reviews.map((review, index) => (
             <div
               key={index}
