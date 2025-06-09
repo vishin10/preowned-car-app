@@ -40,5 +40,4 @@ router.post('/upload', upload.single('image'), (req, res) => {
   void handleUpload(req as MulterRequest, res);
 });
 
-// ✅ Export as default so it can be imported cleanly in index.ts
 export default router;
