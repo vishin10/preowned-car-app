@@ -6,32 +6,20 @@ import uploadRoutes from './upload';
 import { db } from './firebaseAdmin';
 
 const app = express();
-
-// ✅ Use Render's dynamic port or default to 4000 locally
 const PORT = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(express.json());
 
+// ✅ Upload routes
 app.use('/api', uploadRoutes);
 
+// ✅ Add new vehicle
 app.post('/api/admin/add-vehicle', async (req: Request, res: Response) => {
   try {
     const {
-      make,
-      model,
-      year,
-      price,
-      mileage,
-      fuelType,
-      transmission,
-      engineSize,
-      color,
-      features,
-      description,
-      bodyType,
-      condition,
-      images,
+      make, model, year, price, mileage, fuelType, transmission, engineSize,
+      color, features, description, bodyType, condition, images
     } = req.body;
 
     if (!Array.isArray(images) || images.length === 0) {
@@ -64,6 +52,19 @@ app.post('/api/admin/add-vehicle', async (req: Request, res: Response) => {
   }
 });
 
+// ✅ Get all vehicles — FRONTEND EXPECTS THIS
+app.get('/api/admin/vehicles', async (req: Request, res: Response) => {
+  try {
+    const snapshot = await db.collection('vehicles').get();
+    const vehicles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(vehicles);
+  } catch (err) {
+    console.error("❌ Fetch Error:", err);
+    res.status(500).json({ error: 'Failed to fetch vehicles' });
+  }
+});
+
+// ✅ Google Reviews
 app.get('/api/google-reviews', async (req, res) => {
   try {
     const response = await axios.get('https://maps.googleapis.com/maps/api/place/details/json', {
@@ -76,13 +77,13 @@ app.get('/api/google-reviews', async (req, res) => {
 
     const reviews = response.data.result?.reviews || [];
     const fiveStar = reviews.filter((r: any) => r.rating === 5);
-
     res.json(fiveStar);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch reviews' });
   }
 });
 
+// ✅ Delete vehicle
 app.delete('/api/admin/delete-vehicle/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -93,6 +94,7 @@ app.delete('/api/admin/delete-vehicle/:id', async (req, res) => {
   }
 });
 
+// ✅ Mark vehicle as sold
 app.patch('/api/admin/mark-sold/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -103,6 +105,7 @@ app.patch('/api/admin/mark-sold/:id', async (req, res) => {
   }
 });
 
+// ✅ Update vehicle
 app.patch('/api/admin/update-vehicle/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
