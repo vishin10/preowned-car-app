@@ -21,7 +21,7 @@ async function handleUpload(req: MulterRequest, res: Response) {
   });
 
 stream.on('error', (err) => {
-  console.error('🔥 Firebase Upload Error:', err); // 👈 more useful
+  console.error('🔥 Firebase Upload Error:', err); 
   res.status(500).send({ error: err.message });
 });
 
