@@ -66,24 +66,6 @@ app.get('/api/admin/vehicles', async (_req: Request, res: Response) => {
   }
 });
 
-// ✅ Google reviews
-app.get('/api/google-reviews', async (_req, res) => {
-  try {
-    const response = await axios.get('https://maps.googleapis.com/maps/api/place/details/json', {
-      params: {
-        place_id: 'ChIJacPtUmWJyIkRDCwymLIfASY',
-        fields: 'name,rating,reviews',
-        key: 'YOUR_API_KEY', // 🔐 Replace this in .env for security
-      },
-    });
-
-    const reviews = response.data.result?.reviews || [];
-    const fiveStar = reviews.filter((r: any) => r.rating === 5);
-    res.json(fiveStar);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch reviews' });
-  }
-});
 
 // ✅ Delete a vehicle
 app.delete('/api/admin/delete-vehicle/:id', async (req, res) => {
