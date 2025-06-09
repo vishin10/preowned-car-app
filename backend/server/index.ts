@@ -11,7 +11,7 @@ const PORT = process.env.PORT || 4000;
 app.use(cors());
 app.use(express.json());
 
-// ✅ Upload routes
+// 🔗 File upload routes
 app.use('/api', uploadRoutes);
 
 // ✅ Add new vehicle
@@ -36,7 +36,9 @@ app.post('/api/admin/add-vehicle', async (req: Request, res: Response) => {
       transmission,
       engineSize,
       color,
-      features: typeof features === 'string' ? features.split(',').map(f => f.trim()) : features,
+      features: typeof features === 'string'
+        ? features.split(',').map(f => f.trim())
+        : features,
       description,
       bodyType,
       condition: condition || 'used',
@@ -52,8 +54,8 @@ app.post('/api/admin/add-vehicle', async (req: Request, res: Response) => {
   }
 });
 
-// ✅ Get all vehicles — FRONTEND EXPECTS THIS
-app.get('/api/admin/vehicles', async (req: Request, res: Response) => {
+// ✅ Fetch all vehicles
+app.get('/api/admin/vehicles', async (_req: Request, res: Response) => {
   try {
     const snapshot = await db.collection('vehicles').get();
     const vehicles = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -64,14 +66,14 @@ app.get('/api/admin/vehicles', async (req: Request, res: Response) => {
   }
 });
 
-// ✅ Google Reviews
-app.get('/api/google-reviews', async (req, res) => {
+// ✅ Google reviews
+app.get('/api/google-reviews', async (_req, res) => {
   try {
     const response = await axios.get('https://maps.googleapis.com/maps/api/place/details/json', {
       params: {
         place_id: 'ChIJacPtUmWJyIkRDCwymLIfASY',
         fields: 'name,rating,reviews',
-        key: 'AIzaSyDIF4xN9RDsW95v21Op7VOMYAKVMuQeX2g',
+        key: 'YOUR_API_KEY', // 🔐 Replace this in .env for security
       },
     });
 
@@ -83,13 +85,14 @@ app.get('/api/google-reviews', async (req, res) => {
   }
 });
 
-// ✅ Delete vehicle
+// ✅ Delete a vehicle
 app.delete('/api/admin/delete-vehicle/:id', async (req, res) => {
   try {
     const { id } = req.params;
     await db.collection('vehicles').doc(id).delete();
     res.status(200).json({ success: true });
   } catch (err) {
+    console.error("❌ Delete Error:", err);
     res.status(500).json({ error: 'Failed to delete vehicle' });
   }
 });
@@ -101,6 +104,7 @@ app.patch('/api/admin/mark-sold/:id', async (req, res) => {
     await db.collection('vehicles').doc(id).update({ sold: true });
     res.status(200).json({ success: true });
   } catch (err) {
+    console.error("❌ Mark Sold Error:", err);
     res.status(500).json({ error: 'Failed to mark vehicle as sold' });
   }
 });
@@ -111,10 +115,14 @@ app.patch('/api/admin/update-vehicle/:id', async (req: Request, res: Response) =
     const { id } = req.params;
     const data = req.body;
 
-    if (!id || !data) {
-      return res.status(400).json({ error: 'Invalid request' });
+    console.log("👉 Incoming update for ID:", id);
+    console.log("📦 Payload:", data);
+
+    if (!id || typeof data !== 'object' || Object.keys(data).length === 0) {
+      return res.status(400).json({ error: 'Invalid request payload' });
     }
 
+    // Optional: Validate or clean fields if needed here
     await db.collection('vehicles').doc(id).update(data);
     res.status(200).json({ message: 'Vehicle updated successfully' });
   } catch (err) {
