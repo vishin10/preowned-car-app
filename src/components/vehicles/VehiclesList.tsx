@@ -8,6 +8,8 @@ import Button from '../ui/Button';
 import { db } from '../../firebase'; // Adjust path based on your setup
 import { collection, getDocs } from 'firebase/firestore';
 import VehicleDetailsModal from '../vehicles/VehicleDetailsModal';
+import { deleteDoc, doc } from 'firebase/firestore';
+
 
 
 const VehiclesList: React.FC = () => {
@@ -18,6 +20,7 @@ const [allVehicles, setAllVehicles] = useState<Vehicle[]>([]);
   const [filteredVehicles, setFilteredVehicles] = useState<Vehicle[]>([]);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
+const [visibleCount, setVisibleCount] = useState(6);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -153,6 +156,30 @@ useEffect(() => {
 }, [allVehicles, searchTerm, filters]);
 
 
+useEffect(() => {
+  const deleteOldSoldVehicles = async () => {
+    const now = Date.now();
+
+    for (const vehicle of allVehicles) {
+      if (
+        vehicle.sold &&
+        vehicle.soldAt?.toDate &&
+        vehicle.soldAt.toDate() <= new Date(now - 2 * 24 * 60 * 60 * 1000)
+      ) {
+        try {
+          await deleteDoc(doc(db, 'vehicles', vehicle.id));
+          console.log("🗑️ Deleted sold vehicle:", vehicle.id);
+        } catch (err) {
+          console.error("Failed to delete sold vehicle:", err);
+        }
+      }
+    }
+  };
+
+  deleteOldSoldVehicles();
+}, [allVehicles]);
+
+
 
 // ✅ added allVehicles to dependencies
 
@@ -229,9 +256,10 @@ useEffect(() => {
             </p>
           </div>
           <div className="hidden md:block">
-            <p className="text-gray-600">
-  Showing <span className="font-semibold">{filteredVehicles.length}</span> of <span className="font-semibold">{allVehicles.length}</span> vehicles
+     <p className="text-gray-600">
+  Showing <span className="font-semibold">{Math.min(visibleCount, filteredVehicles.length)}</span> of <span className="font-semibold">{filteredVehicles.length}</span> vehicles
 </p>
+
           </div>
         </div>
         
@@ -431,11 +459,11 @@ onChange={() => handleCheckboxChange('make', make.toLowerCase())}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredVehicles.map(vehicle => (
+                {filteredVehicles.slice(0, visibleCount).map(vehicle => (
   <div
     key={vehicle.id}
     className="p-4 border rounded cursor-pointer"
-    onClick={() => setSelectedVehicle(vehicle)} // 👈 open modal
+    onClick={() => setSelectedVehicle(vehicle)}
   >
     <img
       src={vehicle?.images?.[0] || vehicle?.imageUrl || "https://placehold.co/400x300?text=No+Image"}
@@ -460,13 +488,14 @@ onChange={() => handleCheckboxChange('make', make.toLowerCase())}
               </div>
             )}
             
-            {filteredVehicles.length > 0 && (
-              <div className="mt-8 text-center">
-                <Button variant="outline">
-                  Load More Vehicles
-                </Button>
-              </div>
-            )}
+           {visibleCount < filteredVehicles.length && (
+  <div className="mt-8 text-center">
+    <Button variant="outline" onClick={() => setVisibleCount(prev => prev + 6)}>
+      Load More Vehicles
+    </Button>
+  </div>
+)}
+
           </div>
         </div>
       </Container>

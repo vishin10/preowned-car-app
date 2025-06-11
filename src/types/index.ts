@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export interface Vehicle {
   imageUrl: string;
   id: string;
@@ -16,6 +18,7 @@ images: string[];
   condition: 'new' | 'used';
   bodyType: string;
   sold: boolean;
+  soldAt?: Timestamp; // ✅ now recognized
 }
 
 export interface Testimonial {

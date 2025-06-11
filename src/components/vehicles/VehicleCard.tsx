@@ -1,36 +1,55 @@
 import React from 'react';
 import { Tag, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Vehicle } from '../../types';
 
 interface VehicleCardProps {
   vehicle: Vehicle;
+  onViewDetails?: () => void; // allow modal opening
 }
 
-// ✅ Use a valid fallback image path
 const fallbackImage = 'https://via.placeholder.com/400x300?text=No+Image';
 
-const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
+const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle, onViewDetails }) => {
+  const navigate = useNavigate();
+
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(vehicle?.price ?? 0); // fallback to 0 if price is undefined
+  }).format(vehicle?.price ?? 0);
+
+  const handleViewDetails = () => {
+    if (onViewDetails) {
+      onViewDetails(); // open modal from parent
+    } else {
+      navigate(`/vehicles?vehicleId=${vehicle?.id}`); // fallback: navigate
+    }
+  };
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300">
+    <div
+      className="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-300"
+      id={`vehicle-${vehicle?.id}`}
+    >
       <div className="relative">
         <img
-  src={vehicle?.images?.[0] || vehicle?.imageUrl || fallbackImage}
-  alt={`${vehicle?.year ?? ''} ${vehicle?.make ?? ''} ${vehicle?.model ?? ''}`}
-  className="w-full h-48 object-cover"
-  loading="lazy"
-/>
-
+          src={vehicle?.images?.[0] || vehicle?.imageUrl || fallbackImage}
+          alt={`${vehicle?.year ?? ''} ${vehicle?.make ?? ''} ${vehicle?.model ?? ''}`}
+          className="w-full h-48 object-cover"
+          loading="lazy"
+        />
 
         {vehicle?.condition === 'new' && (
           <div className="absolute top-4 left-4 bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded">
             NEW
+          </div>
+        )}
+
+        {vehicle?.sold && (
+          <div className="absolute top-4 left-4 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded">
+            SOLD
           </div>
         )}
 
@@ -66,12 +85,6 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
               {vehicle.fuelType}
             </span>
           )}
-
-{vehicle.sold && (
-  <div className="text-red-600 font-bold mb-2">SOLD</div>
-)}
-
-
         </div>
 
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">
@@ -79,17 +92,12 @@ const VehicleCard: React.FC<VehicleCardProps> = ({ vehicle }) => {
         </p>
 
         <div className="flex justify-between items-center">
-          <a
-            href={`#vehicle/${vehicle?.id}`}
+          <button
+            onClick={handleViewDetails}
             className="text-red-600 font-medium flex items-center hover:text-red-700 transition-colors"
           >
             View Details
             <ArrowRight className="w-4 h-4 ml-1" />
-          </a>
-          <button
-            className="bg-gray-100 text-gray-800 hover:bg-gray-200 px-3 py-1 rounded-md text-sm transition-colors"
-          >
-            Compare
           </button>
         </div>
       </div>

@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronRight } from 'lucide-react';
-
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 
 import Container from '../ui/Container';
 import Button from '../ui/Button';
 import VehicleCard from '../vehicles/VehicleCard';
+import VehicleDetailsModal from '../vehicles/VehicleDetailsModal'; // You need this component
 
 const FeaturedVehicles: React.FC = () => {
   const [featuredVehicles, setFeaturedVehicles] = useState<any[]>([]);
+  const [selectedVehicle, setSelectedVehicle] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchVehicles = async () => {
@@ -39,13 +40,6 @@ const FeaturedVehicles: React.FC = () => {
               Discover our hand-picked selection of premium vehicles, each offering exceptional quality, performance, and value.
             </p>
           </div>
-          <a 
-            href="#vehicles" 
-            className="hidden md:flex items-center text-red-600 font-medium hover:text-red-700 transition-colors mt-4 md:mt-0"
-          >
-            View all vehicles
-            <ChevronRight className="w-5 h-5 ml-1" />
-          </a>
         </div>
 
         {featuredVehicles.length === 0 ? (
@@ -53,20 +47,29 @@ const FeaturedVehicles: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuredVehicles.map((vehicle) => (
-              <VehicleCard key={vehicle.id} vehicle={vehicle} />
-            ))}
+  <VehicleCard
+    key={vehicle.id}
+    vehicle={vehicle}
+    onViewDetails={() => setSelectedVehicle(vehicle)} // ✅ add this
+  />
+))}
+
           </div>
         )}
 
         <div className="mt-12 text-center md:hidden">
-          <Button 
-            variant="outline" 
-            icon={<ChevronRight className="w-5 h-5" />}
-            iconPosition="right"
-          >
+          <Button variant="outline">
             View all vehicles
+            <ChevronRight className="w-5 h-5 ml-1" />
           </Button>
         </div>
+
+        {selectedVehicle && (
+          <VehicleDetailsModal
+            vehicle={selectedVehicle}
+            onClose={() => setSelectedVehicle(null)}
+          />
+        )}
       </Container>
     </section>
   );
