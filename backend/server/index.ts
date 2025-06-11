@@ -67,6 +67,7 @@ app.get('/api/admin/vehicles', async (_req: Request, res: Response) => {
 });
 
 
+
 // ✅ Delete a vehicle
 app.delete('/api/admin/delete-vehicle/:id', async (req, res) => {
   try {
