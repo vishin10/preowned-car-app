@@ -16,18 +16,17 @@ const Footer: React.FC = () => {
               Your trusted partner for premium vehicles. Experience luxury, performance, and exceptional service.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                <Facebook size={20} />
-              </a>
+             <a
+  href="https://www.facebook.com/p/The-Car-King-on-Queen-61559027723850/"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-gray-300 hover:text-white transition-colors"
+>
+  <Facebook size={20} />
+</a>
               <a href="#" className="text-gray-300 hover:text-white transition-colors">
                 <Instagram size={20} />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                <Twitter size={20} />
-              </a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors">
-                <Linkedin size={20} />
-              </a>
+              </a>        
             </div>
           </div>
           
@@ -58,7 +57,8 @@ const Footer: React.FC = () => {
             <ul className="space-y-4">
               <li className="flex">
                 <MapPin className="w-5 h-5 text-red-500 mr-3 flex-shrink-0" />
-                <span className="text-gray-300">123 Luxury Lane, Prestigeville, CA 90210</span>
+                <span className="text-gray-300">1774 S Queen St, York, PA 17403
+</span>
               </li>
               <li className="flex">
                 <Phone className="w-5 h-5 text-red-500 mr-3 flex-shrink-0" />

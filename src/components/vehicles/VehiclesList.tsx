@@ -3,13 +3,12 @@ import { Search, Filter, ChevronDown, X } from 'lucide-react';
 import {  getFilterOptions } from '../../data/vehicles';
 import { Vehicle, VehicleFilters } from '../../types';
 import Container from '../ui/Container';
-import VehicleCard from './VehicleCard';
 import Button from '../ui/Button';
 import { db } from '../../firebase'; // Adjust path based on your setup
 import { collection, getDocs } from 'firebase/firestore';
 import VehicleDetailsModal from '../vehicles/VehicleDetailsModal';
 import { deleteDoc, doc } from 'firebase/firestore';
-
+import './VehicleCard.css'
 
 
 const VehiclesList: React.FC = () => {
@@ -460,9 +459,13 @@ onChange={() => handleCheckboxChange('make', make.toLowerCase())}
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredVehicles.slice(0, visibleCount).map(vehicle => (
+  <div key={vehicle.id} className="relative rounded overflow-hidden">
+  {/* 🔴 Red animated blob behind content */}
+  <div className="absolute top-1/2 left-1/2 w-[150px] h-[150px] bg-red-500 rounded-full opacity-50 blur-xl animate-blob -translate-x-1/2 -translate-y-1/2 z-0"></div>
+
+  {/* Your card content on top of blob */}
   <div
-    key={vehicle.id}
-    className="p-4 border rounded cursor-pointer"
+    className="relative z-10 p-4 border rounded cursor-pointer bg-white"
     onClick={() => setSelectedVehicle(vehicle)}
   >
     <img
@@ -476,6 +479,8 @@ onChange={() => handleCheckboxChange('make', make.toLowerCase())}
     <p><strong>Price:</strong> {vehicle.price}</p>
     <p><strong>Fuel:</strong> {vehicle.fuelType}</p>
   </div>
+</div>
+
 ))}
 
 {selectedVehicle && (
